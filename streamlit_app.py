@@ -2,11 +2,7 @@ import streamlit as st
 import requests
 
 # Set the app title 
-st.title('   __    __     ______     _____     ______        ______     __  __        ______     __  __     __     ') 
-st.title('  /\ "-./  \   /\  __ \   /\  __-.  /\  ___\      /\  == \   /\ \_\ \      /\  == \   /\ \/\ \   /\ \   ') 
-st.title('  \ \ \-./\ \  \ \  __ \  \ \ \/\ \ \ \  __\      \ \  __<   \ \____ \     \ \  __<   \ \ \_\ \  \ \ \  ') 
-st.title('   \ \_\ \ \_\  \ \_\ \_\  \ \____-  \ \_____\     \ \_____\  \/\_____\     \ \_\ \_\  \ \_____\  \ \_\ ') 
-st.title('    \/_/  \/_/   \/_/\/_/   \/____/   \/_____/      \/_____/   \/_____/      \/_/ /_/   \/_____/   \/_/ ') 
+st.title(' ▌║█║▌│║▌│║▌║▌█║made by rui ▌│║▌║▌│║║▌█║▌║█  ') 
                                                                                                       
 
 # Add a welcome message 
@@ -20,7 +16,7 @@ st.write('Customized Message:', widgetuser_input)
 
 
 #API calls
-response = requests.get('https://api.vatcomply.com/rates?base=USD')
+response = requests.get('https://api.vatcomply.com/rates?base=MYR')
 
 if response.status_code == 200:
     data = response.json()
