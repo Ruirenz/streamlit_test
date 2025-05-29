@@ -2,13 +2,13 @@ import streamlit as st
 import requests
 
 # Set the app title 
-st.title('First Streamlit App by rui !!') 
+st.title('First Streamlit App by rui ⍵ !!') 
 
 # Add a welcome message 
 st.write('Welcome to rui Streamlit app!') 
 
 # Create a text input 
-widgetuser_input = st.text_input('Enter a custom message:', 'Hello, Siuuuu!') 
+widgetuser_input = st.text_input('Enter a custom message:', 'Hello,  Siuuuu!') 
 
 # Display the customized message 
 st.write('Customized Message:', widgetuser_input)
