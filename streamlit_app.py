@@ -1,3 +1,6 @@
+import streamlit as st
+from datetime import datetime, date
+
 # --- Doodle background style ---
 st.markdown("""
     <style>
@@ -6,10 +9,8 @@ st.markdown("""
         background-repeat: repeat;
         background-size: auto;
     }
-
-
-import streamlit as st
-from datetime import datetime, date
+    </style>
+""", unsafe_allow_html=True)
 
 # --- Sidebar Menu ---
 menu = st.sidebar.selectbox("Select a Calculator", [
