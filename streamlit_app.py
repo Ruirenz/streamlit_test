@@ -5,7 +5,7 @@ from datetime import date
 st.markdown("""
     <style>
     .stApp {
-        background-image: url("blob:https://web.whatsapp.com/4e5b715f-e1a6-4697-ae46-891b51a94054");
+        background-image: url("https://web.whatsapp.com/4e5b715f-e1a6-4697-ae46-891b51a94054");
         background-repeat: repeat;
         background-size: auto;
     }
