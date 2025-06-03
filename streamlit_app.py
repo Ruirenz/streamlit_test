@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, date
+from datetime import date
 
 # --- Background Color Styling ---
 st.markdown("""
@@ -52,5 +52,16 @@ elif menu == "Age Calculator":
 # --- Temperature Converter ---
 elif menu == "Temperature Converter":
     st.title("🌡️ Temperature Converter")
-    conversion = st.selectbox("Select conversion direction:",
+    conversion = st.selectbox("Select conversion direction:", [
+        "Celsius to Fahrenheit",
+        "Fahrenheit to Celsius"
+    ])
+    temp = st.number_input("Enter temperature value:")
 
+    if st.button("Convert"):
+        if conversion == "Celsius to Fahrenheit":
+            result = (temp * 9/5) + 32
+            st.success(f"{temp}°C = {result:.2f}°F")
+        else:
+            result = (temp - 32) * 5/9
+            st.success(f"{temp}°F = {result:.2f}°C")
