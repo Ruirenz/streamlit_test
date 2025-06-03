@@ -1,48 +1,58 @@
 import streamlit as st
-import requests
+from datetime import datetime, date
 
 # --- Sidebar Menu ---
-menu = st.sidebar.selectbox("Select a page", ["Home", "Currency Exchange"])
+menu = st.sidebar.selectbox("Select a Calculator", [
+    "BMI Calculator",
+    "Age Calculator",
+    "Temperature Converter"
+])
 
-# --- Home Page ---
-if menu == "Home":
-    st.title("Made by Rui 👋")
-    st.write("Welcome to Rui's Streamlit app!")
+# --- BMI Calculator ---
+if menu == "BMI Calculator":
+    st.title("🏋️ BMI Calculator")
+    weight = st.number_input("Enter your weight (kg):", min_value=0.0, value=60.0)
+    height = st.number_input("Enter your height (cm):", min_value=0.0, value=170.0)
 
-    # Text input
-    widgetuser_input = st.text_input("Enter a custom message:", "Hello, Siuuuu!")
-    st.write("Customized Message:", widgetuser_input)
-
-# --- Currency Exchange Page ---
-elif menu == "Currency Exchange":
-    st.title("💱 Currency Exchange Tool")
-
-    # Get supported currencies from API
-    currencies_response = requests.get("https://api.vatcomply.com/currencies")
-    if currencies_response.status_code == 200:
-        currencies = currencies_response.json()
-        currency_list = sorted(currencies.keys())
-
-        # User input for currency selection
-        base_currency = st.selectbox("Base Currency", currency_list, index=currency_list.index("USD"))
-        target_currency = st.selectbox("Target Currency", currency_list, index=currency_list.index("MYR"))
-        amount = st.number_input(f"Amount in {base_currency}", min_value=0.0, value=1.0)
-
-        # Fetch exchange rate
-        rate_response = requests.get(f"https://api.vatcomply.com/rates?base={base_currency}")
-        if rate_response.status_code == 200:
-            rate_data = rate_response.json()
-            rate = rate_data["rates"].get(target_currency)
-
-            if rate:
-                converted = amount * rate
-                st.success(f"{amount:.2f} {base_currency} = {converted:.2f} {target_currency}")
-                st.caption(f"Exchange Rate: 1 {base_currency} = {rate:.4f} {target_currency}")
+    if st.button("Calculate BMI"):
+        if weight > 0 and height > 0:
+            height_m = height / 100
+            bmi = weight / (height_m ** 2)
+            st.success(f"Your BMI is: {bmi:.2f}")
+            if bmi < 18.5:
+                st.info("Category: Underweight")
+            elif bmi < 24.9:
+                st.info("Category: Normal weight")
+            elif bmi < 29.9:
+                st.info("Category: Overweight")
             else:
-                st.error(f"Exchange rate for {target_currency} not found.")
+                st.info("Category: Obese")
         else:
-            st.error(f"Failed to fetch exchange rates: {rate_response.status_code}")
-    else:
-        st.error("Failed to load currency list.")
+            st.warning("Please enter valid height and weight.")
 
+# --- Age Calculator ---
+elif menu == "Age Calculator":
+    st.title("🎂 Age Calculator")
+    dob = st.date_input("Enter your date of birth:", date(2000, 1, 1))
 
+    if st.button("Calculate Age"):
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        st.success(f"You are {age} years old.")
+
+# --- Temperature Converter ---
+elif menu == "Temperature Converter":
+    st.title("🌡️ Temperature Converter")
+    conversion = st.selectbox("Select conversion direction:", [
+        "Celsius to Fahrenheit",
+        "Fahrenheit to Celsius"
+    ])
+    temp = st.number_input("Enter temperature value:")
+
+    if st.button("Convert"):
+        if conversion == "Celsius to Fahrenheit":
+            result = (temp * 9/5) + 32
+            st.success(f"{temp}°C = {result:.2f}°F")
+        else:
+            result = (temp - 32) * 5/9
+            st.success(f"{temp}°F = {result:.2f}°C")
