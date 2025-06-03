@@ -5,7 +5,7 @@ from datetime import date
 st.markdown("""
     <style>
     .stApp {
-        background-image: url("https://www.google.com/url?sa=i&url=https%3A%2F%2Fwisecrafthandmade.com%2Fmake-anime-mural-wall%2F&psig=AOvVaw2nOLX9a8QR7_JfK5KW8hXF&ust=1749056690237000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLCouo7e1Y0DFQAAAAAdAAAAABAE");
+        background-image: url("https://wallpapercave.com/wp/wp9851474.png");
         background-repeat: repeat;
         background-size: auto;
     }
