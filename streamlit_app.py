@@ -1,13 +1,11 @@
 import streamlit as st
 from datetime import datetime, date
 
-# --- Doodle background style ---
+# --- Soft Background Color (suggested pastel blue) ---
 st.markdown("""
     <style>
     .stApp {
-        background-image: url("https://www.transparenttextures.com/patterns/sketchy.png");
-        background-repeat: repeat;
-        background-size: auto;
+        background-color: #eaf6ff;  /* pastel blue */
     }
     </style>
 """, unsafe_allow_html=True)
@@ -63,6 +61,12 @@ elif menu == "Temperature Converter":
     if st.button("Convert"):
         if conversion == "Celsius to Fahrenheit":
             result = (temp * 9/5) + 32
+            st.success(f"{temp}°C = {result:.2f}°F")
+        else:
+            result = (temp - 32) * 5/9
+            st.success(f"{temp}°F = {result:.2f}°C")
+
+
             st.success(f"{temp}°C = {result:.2f}°F")
         else:
             result = (temp - 32) * 5/9
