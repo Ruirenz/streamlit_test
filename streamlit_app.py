@@ -5,7 +5,7 @@ from datetime import date
 st.markdown("""
     <style>
     .stApp {
-          background-color: #f5f5f5;  /* Light Gray */
+          background-color: #f3e5f5; 
     }
     </style>
 """, unsafe_allow_html=True)
