@@ -1,3 +1,14 @@
+# --- Doodle background style ---
+st.markdown("""
+    <style>
+    .stApp {
+        background-image: url("https://www.transparenttextures.com/patterns/sketchy.png");
+        background-repeat: repeat;
+        background-size: auto;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 import streamlit as st
 from datetime import datetime, date
 
