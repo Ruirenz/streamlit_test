@@ -5,7 +5,7 @@ from datetime import date
 st.markdown("""
     <style>
     .stApp {
-        background-image: url("https://wallpapercave.com/wp/wp9851474.png");
+        background-image: url("https://img.freepik.com/premium-vector/anime-manga-girl-eyes-looking-from-paper-tear-drawn-anime-girl-peeps-out-isolated_380711-388.jpg");
         background-repeat: repeat;
         background-size: auto;
     }
