@@ -1,11 +1,11 @@
 import streamlit as st
 from datetime import datetime, date
 
-# --- Soft Background Color (suggested pastel blue) --
+# --- Background Color Styling ---
 st.markdown("""
     <style>
     .stApp {
-        background-color: #eaf6ff;  /* pastel blue */
+        background-color: #eaf6ff; /* pastel blue */
     }
     </style>
 """, unsafe_allow_html=True)
@@ -52,22 +52,5 @@ elif menu == "Age Calculator":
 # --- Temperature Converter ---
 elif menu == "Temperature Converter":
     st.title("🌡️ Temperature Converter")
-    conversion = st.selectbox("Select conversion direction:", [
-        "Celsius to Fahrenheit",
-        "Fahrenheit to Celsius"
-    ])
-    temp = st.number_input("Enter temperature value:")
+    conversion = st.selectbox("Select conversion direction:",
 
-    if st.button("Convert"):
-        if conversion == "Celsius to Fahrenheit":
-            result = (temp * 9/5) + 32
-            st.success(f"{temp}°C = {result:.2f}°F")
-        else:
-            result = (temp - 32) * 5/9
-            st.success(f"{temp}°F = {result:.2f}°C")
-
-
-            st.success(f"{temp}°C = {result:.2f}°F")
-        else:
-            result = (temp - 32) * 5/9
-            st.success(f"{temp}°F = {result:.2f}°C")
