@@ -5,7 +5,7 @@ from datetime import date
 st.markdown("""
     <style>
     .stApp {
-        background-image: url("https://m.media-amazon.com/images/M/MV5BNzczMzQ3MmItMGFjZC00NzEwLWEzZWYtZTliMjkwOWQ2YzIxXkEyXkFqcGdeQXRyYW5zY29kZS13b3JrZmxvdw@@._V1_.jpg");
+        background-image: url("https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fcolor-background&psig=AOvVaw0MjQliDuBCXjUGrC9FaN7Z&ust=1749057768225000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLi8z4vi1Y0DFQAAAAAdAAAAABAE");
         background-repeat: repeat;
         background-size: auto;
     }
