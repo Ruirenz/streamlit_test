@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime, date
 
-# --- Soft Background Color (suggested pastel blue) ---
+# --- Soft Background Color (suggested pastel blue) --
 st.markdown("""
     <style>
     .stApp {
