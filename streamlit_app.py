@@ -1,13 +1,13 @@
 import streamlit as st
 import requests
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # --- Config ---
-API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your ke
+API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your key
 BASE_URL = "https://newsapi.org/v2/top-headlines"
 
-# Updated list of all available countries (including Palestine, excluding Israel)
+# Updated country list with Palestine and without Israel
 COUNTRIES = {
     'ae': 'United Arab Emirates',
     'ar': 'Argentina',
@@ -73,53 +73,55 @@ st.write("Get news headlines by country for a specific day")
 col1, col2 = st.columns(2)
 
 with col1:
-    # Convert country codes to display names for selection
+    # Country selection with formatted display
     country_names = [f"{name} ({code})" for code, name in COUNTRIES.items()]
-    selected_country = st.selectbox("Select a country", country_names)
-    # Extract country code from selection
+    selected_country = st.selectbox("Select country", country_names, index=0)
     country_code = selected_country.split('(')[-1].strip(')')
 
 with col2:
-    # Single date selection
-    selected_date = st.date_input("Select date", datetime.now())
+    # Single date selection (default to today)
+    news_date = st.date_input("Select date", datetime.now())
 
-keyword = st.text_input("Search by keyword (optional):", "")
+keyword = st.text_input("Filter by keyword (optional):", "")
 
 # --- API Request ---
-params = {
-    "apiKey": API_KEY,
-    "country": country_code,
-    "q": keyword if keyword else "",
-    "pageSize": 100,  # Maximum allowed by free tier
-    "from": selected_date,
-    "to": selected_date + timedelta(days=1)  # Include the full selected day
-}
+if st.button("Get News"):
+    params = {
+        "apiKey": API_KEY,
+        "country": country_code,
+        "q": keyword if keyword else "",
+        "pageSize": 100,  # Max allowed by free tier
+    }
 
-if st.button("Fetch News"):
-    with st.spinner(f"Fetching news for {COUNTRIES[country_code]} on {selected_date}..."):
-        response = requests.get(BASE_URL, params=params)
-
-        if response.status_code == 200:
+    with st.spinner(f"Fetching news for {COUNTRIES[country_code]} on {news_date}..."):
+        try:
+            response = requests.get(BASE_URL, params=params)
+            response.raise_for_status()  # Raises exception for 4XX/5XX errors
+            
             news_data = response.json()
             articles = news_data.get("articles", [])
+            
+            # Filter articles by selected date (since API might return recent articles)
+            filtered_articles = [
+                article for article in articles 
+                if article['publishedAt'].startswith(str(news_date))
+            ]
 
-            if articles:
-                st.subheader(f"📰 News for {COUNTRIES[country_code]} on {selected_date}")
+            if filtered_articles:
+                st.subheader(f"📰 News for {COUNTRIES[country_code]} on {news_date}")
                 
-                # Convert to DataFrame for better display
-                news_df = pd.DataFrame(articles)
-                news_df['publishedAt'] = pd.to_datetime(news_df['publishedAt']).dt.strftime('%Y-%m-%d %H:%M')
-                
-                # Display in a clean table with clickable links
-                for idx, row in news_df.iterrows():
-                    st.markdown(f"### [{row['title']}]({row['url']})")
-                    st.write(row['description'])
-                    st.caption(f"Source: {row['source']['name']} | Published: {row['publishedAt']}")
+                for article in filtered_articles:
+                    published_time = article['publishedAt'][11:16]  # Extract HH:MM
+                    st.markdown(f"### [{article['title']}]({article['url']})")
+                    st.write(article.get('description', 'No description available'))
+                    st.caption(f"🕒 {published_time} | 📰 {article['source']['name']}")
                     st.write("---")
                 
-                st.success(f"Found {len(articles)} articles")
+                st.success(f"Found {len(filtered_articles)} articles")
             else:
-                st.info("No articles found for the selected date and country.")
-        else:
-            error_msg = response.json().get('message', 'Unknown error')
-            st.error(f"API Error: {response.status_code} - {error_msg}")
+                st.info("No articles found for the selected date. Try a more recent date.")
+                
+        except requests.exceptions.RequestException as e:
+            st.error(f"Error fetching news: {str(e)}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {str(e)}")
