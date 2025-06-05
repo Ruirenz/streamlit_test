@@ -1,89 +1,62 @@
 import streamlit as st
 import requests
-from datetime import datetime
+from datetime import date
+import matplotlib.pyplot as plt
 
-# NewsAPI Configuration
-API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your key
-BASE_URL = "https://newsapi.org/v2/top-headlines"
+st.title("📚 Historical Events Explorer")
+st.write("Select any date and explore what happened in history on that day!")
 
-# Complete country list including Palestine (ps) and excluding Israel (il)
-COUNTRIES = {
-    'ae': '🇦🇪 UAE', 'ar': '🇦🇷 Argentina', 'at': '🇦🇹 Austria', 
-    'au': '🇦🇺 Australia', 'be': '🇧🇪 Belgium', 'bg': '🇧🇬 Bulgaria',
-    'br': '🇧🇷 Brazil', 'ca': '🇨🇦 Canada', 'ch': '🇨🇭 Switzerland',
-    'cn': '🇨🇳 China', 'co': '🇨🇴 Colombia', 'cu': '🇨🇺 Cuba',
-    'cz': '🇨🇿 Czechia', 'de': '🇩🇪 Germany', 'eg': '🇪🇬 Egypt',
-    'fr': '🇫🇷 France', 'gb': '🇬🇧 UK', 'gr': '🇬🇷 Greece',
-    'hk': '🇭🇰 Hong Kong', 'hu': '🇭🇺 Hungary', 'id': '🇮🇩 Indonesia',
-    'ie': '🇮🇪 Ireland', 'in': '🇮🇳 India', 'it': '🇮🇹 Italy',
-    'jp': '🇯🇵 Japan', 'kr': '🇰🇷 Korea', 'lt': '🇱🇹 Lithuania',
-    'lv': '🇱🇻 Latvia', 'ma': '🇲🇦 Morocco', 'mx': '🇲🇽 Mexico',
-    'my': '🇲🇾 Malaysia', 'ng': '🇳🇬 Nigeria', 'nl': '🇳🇱 Netherlands',
-    'no': '🇳🇴 Norway', 'nz': '🇳🇿 New Zealand', 'ph': '🇵🇭 Philippines',
-    'pl': '🇵🇱 Poland', 'ps': '🇵🇸 Palestine', 'pt': '🇵🇹 Portugal',
-    'ro': '🇷🇴 Romania', 'rs': '🇷🇸 Serbia', 'ru': '🇷🇺 Russia',
-    'sa': '🇸🇦 Saudi Arabia', 'se': '🇸🇪 Sweden', 'sg': '🇸🇬 Singapore',
-    'si': '🇸🇮 Slovenia', 'sk': '🇸🇰 Slovakia', 'th': '🇹🇭 Thailand',
-    'tr': '🇹🇷 Turkey', 'tw': '🇹🇼 Taiwan', 'ua': '🇺🇦 Ukraine',
-    'us': '🇺🇸 USA', 've': '🇻🇪 Venezuela', 'za': '🇿🇦 South Africa'
-}
+# --- Date Input ---
+selected_date = st.date_input(
+    "Choose a date",
+    value=date.today(),
+    min_value=date(1900, 1, 1),
+    max_value=date(2100, 12, 31)
+)
 
-# Streamlit App
-st.set_page_config(page_title="World News Dashboard", layout="wide")
-st.title("🌍 World News Dashboard")
-st.write("Get all news headlines by country and date")
+month = selected_date.month
+day = selected_date.day
 
-# User Inputs
-col1, col2 = st.columns(2)
-with col1:
-    selected_country = st.selectbox(
-        "Select Country",
-        options=list(COUNTRIES.values()),
-        index=list(COUNTRIES.values()).index('🇺🇸 USA')
-    )
-    country_code = [k for k, v in COUNTRIES.items() if v == selected_country][0]
+# --- API Call ---
+if st.button("Show Historical Events"):
+    with st.spinner("Fetching data..."):
+        url = f"https://byabbe.se/on-this-day/{month}/{day}/events.json"
+        res = requests.get(url)
 
-with col2:
-    selected_date = st.date_input(
-        "Select Date",
-        datetime.now()
-    )
+        if res.status_code == 200:
+            data = res.json()
+            events = data.get("events", [])
 
-# Fetch and Display News
-if st.button("Get Daily News", type="primary"):
-    with st.spinner(f"Fetching news for {selected_country} on {selected_date}..."):
-        try:
-            # Get recent news (NewsAPI's top-headlines doesn't support historical dates)
-            response = requests.get(
-                BASE_URL,
-                params={
-                    "apiKey": API_KEY,
-                    "country": country_code,
-                    "pageSize": 100  # Max results for free tier
-                }
-            )
-            response.raise_for_status()
-            
-            # Filter articles by selected date
-            all_articles = response.json().get('articles', [])
-            daily_news = [
-                article for article in all_articles 
-                if article['publishedAt'].startswith(str(selected_date))
-            ]
-            
-            # Display results
-            if not daily_news:
-                st.warning(f"No news found for {selected_country} on {selected_date}")
-                st.info("Note: Free NewsAPI only shows very recent news (last 1-2 days)")
+            if events:
+                st.subheader(f"🗓️ Notable Events on {selected_date.strftime('%B %d')}")
+                for event in events[:10]:  # show only top 10
+                    year = event.get("year")
+                    desc = event.get("description")
+                    st.markdown(f"- **{year}**: {desc}")
             else:
-                st.success(f"📰 Found {len(daily_news)} news articles")
-                
-                for article in daily_news:
-                    with st.expander(f"**{article['title']}**", expanded=False):
-                        st.write(article.get('description', 'No description available'))
-                        st.caption(f"**Source:** {article['source']['name']} | **Published:** {article['publishedAt'][11:16]} UTC")
-                        st.markdown(f"[Read full article →]({article['url']})")
-                        st.divider()
-                        
-        except Exception as e:
-            st.error(f"Error fetching news: {str(e)}")
+                st.info("No events found for this date.")
+
+        else:
+            st.error("Failed to fetch events. Try again later.")
+
+# --- Optional: Visualize Events by Century ---
+    if events:
+        st.subheader("📊 Event Count by Century")
+        centuries = []
+        for event in events:
+            try:
+                yr = int(event["year"])
+                century = (yr // 100 + 1) if yr > 0 else (yr // 100)
+                centuries.append(f"{century}th century")
+            except:
+                continue
+
+        # Plot bar chart
+        from collections import Counter
+        century_counts = Counter(centuries)
+        fig, ax = plt.subplots()
+        ax.bar(century_counts.keys(), century_counts.values(), color="skyblue")
+        plt.xticks(rotation=45)
+        ax.set_ylabel("Number of Events")
+        ax.set_title("Events by Century")
+        st.pyplot(fig)
