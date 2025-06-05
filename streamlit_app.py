@@ -22,7 +22,8 @@ with st.sidebar:
         "Filter by Century",
         min_value=1,
         max_value=21,
-        value=(18, 21)  # Default: 18th-21st century
+        value=(18, 21)  # This line was missing closing parenthesis
+    )
     
     st.markdown("""
     **Data Sources**:
