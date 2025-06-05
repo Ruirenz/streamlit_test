@@ -2,61 +2,119 @@ import streamlit as st
 import requests
 from datetime import date
 import matplotlib.pyplot as plt
+import pandas as pd
 
+st.set_page_config(layout="wide")
 st.title("📚 Historical Events Explorer")
-st.write("Select any date and explore what happened in history on that day!")
+st.write("Discover what happened on any date in history")
 
-# --- Date Input ---
-selected_date = st.date_input(
-    "Choose a date",
-    value=date.today(),
-    min_value=date(1900, 1, 1),
-    max_value=date(2100, 12, 31)
-)
+# --- Sidebar Filters ---
+with st.sidebar:
+    st.header("Filters")
+    selected_date = st.date_input(
+        "Select Date",
+        value=date(1969, 7, 20),
+        min_value=date(1, 1, 1),
+        max_value=date.today()
+    )
+    
+    year_filter = st.slider(
+        "Filter by Century",
+        min_value=1,
+        max_value=21,
+        value=(18, 21)  # Default: 18th-21st century
+    
+    st.markdown("""
+    **Data Sources**:
+    - [On This Day API](https://byabbe.se/on-this-day/)
+    - [Wikipedia Events](https://en.wikipedia.org)
+    """)
 
-month = selected_date.month
-day = selected_date.day
-
-# --- API Call ---
-if st.button("Show Historical Events"):
-    with st.spinner("Fetching data..."):
-        url = f"https://byabbe.se/on-this-day/{month}/{day}/events.json"
-        res = requests.get(url)
-
+# --- API Functions ---
+def fetch_wikipedia_events(month, day):
+    """Get events from Wikipedia's 'On This Day' API"""
+    url = f"https://byabbe.se/on-this-day/{month}/{day}/events.json"
+    try:
+        res = requests.get(url, timeout=10)
         if res.status_code == 200:
-            data = res.json()
-            events = data.get("events", [])
+            return res.json().get("events", [])
+    except:
+        return []
+    return []
 
-            if events:
-                st.subheader(f"🗓️ Notable Events on {selected_date.strftime('%B %d')}")
-                for event in events[:10]:  # show only top 10
-                    year = event.get("year")
-                    desc = event.get("description")
-                    st.markdown(f"- **{year}**: {desc}")
-            else:
-                st.info("No events found for this date.")
+def fetch_historical_events(month, day, year=None):
+    """Combine multiple data sources"""
+    events = fetch_wikipedia_events(month, day)
+    
+    # Filter by year if provided
+    if year:
+        events = [e for e in events if str(year) in e.get("year", "")]
+    
+    return sorted(events, key=lambda x: int(x.get("year", 0)), reverse=True)
 
-        else:
-            st.error("Failed to fetch events. Try again later.")
+# --- Main Display ---
+if st.button("🔍 Find Historical Events"):
+    month, day, year = selected_date.month, selected_date.day, selected_date.year
+    events = fetch_historical_events(month, day)
+    
+    if not events:
+        st.warning("No events found for this date")
+    else:
+        # Apply century filter
+        min_century, max_century = year_filter
+        filtered_events = [
+            e for e in events 
+            if min_century <= (int(e["year"]) // 100 + 1) <= max_century
+        ]
+        
+        # --- Display Results ---
+        col1, col2 = st.columns([3, 2])
+        
+        with col1:
+            st.subheader(f"🗓️ {selected_date.strftime('%B %d')} in History")
+            
+            for event in filtered_events[:50]:  # Limit to 50 events
+                with st.expander(f"**{event['year']}**: {event['description'][:100]}...", expanded=False):
+                    st.write(event["description"])
+                    if "wikipedia" in event:
+                        st.markdown(f"[Read more on Wikipedia]({event['wikipedia'][0]['wikipedia']})")
+        
+        with col2:
+            # --- Visualization ---
+            st.subheader("📊 Timeline Analysis")
+            
+            # Prepare data for visualization
+            df = pd.DataFrame(filtered_events)
+            df["year"] = df["year"].astype(int)
+            df["century"] = (df["year"] // 100) + 1
+            
+            # Century Distribution
+            fig1, ax1 = plt.subplots()
+            df["century"].value_counts().sort_index().plot(
+                kind="bar", 
+                color="teal",
+                ax=ax1
+            )
+            ax1.set_title("Events by Century")
+            ax1.set_xlabel("Century")
+            ax1.set_ylabel("Count")
+            st.pyplot(fig1)
+            
+            # Year Distribution
+            fig2, ax2 = plt.subplots(figsize=(10, 4))
+            df.plot.scatter(
+                x="year",
+                y=[0]*len(df),
+                s=100,
+                alpha=0.5,
+                ax=ax2
+            )
+            ax2.set_title("Event Timeline")
+            ax2.get_yaxis().set_visible(False)
+            st.pyplot(fig2)
 
-# --- Optional: Visualize Events by Century ---
-    if events:
-        st.subheader("📊 Event Count by Century")
-        centuries = []
-        for event in events:
-            try:
-                yr = int(event["year"])
-                century = (yr // 100 + 1) if yr > 0 else (yr // 100)
-                centuries.append(f"{century}th century")
-            except:
-                continue
-
-        # Plot bar chart
-        from collections import Counter
-        century_counts = Counter(centuries)
-        fig, ax = plt.subplots()
-        ax.bar(century_counts.keys(), century_counts.values(), color="skyblue")
-        plt.xticks(rotation=45)
-        ax.set_ylabel("Number of Events")
+# --- Footer ---
+st.markdown("---")
+st.caption("ℹ️ Data sources may have limitations for very ancient dates")
         ax.set_title("Events by Century")
         st.pyplot(fig)
