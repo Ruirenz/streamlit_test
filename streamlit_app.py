@@ -7,7 +7,12 @@ st.title("📚 Historical Events Explorer")
 st.write("Select any date and explore what happened in history on that day!")
 
 # --- Date Input ---
-selected_date = st.date_input("Choose a date", date.today())
+selected_date = st.date_input(
+    "Choose a date",
+    value=date.today(),
+    min_value=date(1900, 1, 1),
+    max_value=date(2100, 12, 31)
+)
 month = selected_date.month
 day = selected_date.day
 
