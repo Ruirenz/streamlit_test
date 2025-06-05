@@ -2,120 +2,88 @@ import streamlit as st
 import requests
 from datetime import datetime
 
-# --- Config ---
+# NewsAPI Configuration
 API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your key
 BASE_URL = "https://newsapi.org/v2/top-headlines"
 
-# Updated country list with Palestine and without Israel
+# Complete country list including Palestine (ps) and excluding Israel (il)
 COUNTRIES = {
-    'ae': 'United Arab Emirates',
-    'ar': 'Argentina',
-    'at': 'Austria',
-    'au': 'Australia',
-    'be': 'Belgium',
-    'bg': 'Bulgaria',
-    'br': 'Brazil',
-    'ca': 'Canada',
-    'ch': 'Switzerland',
-    'cn': 'China',
-    'co': 'Colombia',
-    'cu': 'Cuba',
-    'cz': 'Czech Republic',
-    'de': 'Germany',
-    'eg': 'Egypt',
-    'fr': 'France',
-    'gb': 'United Kingdom',
-    'gr': 'Greece',
-    'hk': 'Hong Kong',
-    'hu': 'Hungary',
-    'id': 'Indonesia',
-    'ie': 'Ireland',
-    'in': 'India',
-    'it': 'Italy',
-    'jp': 'Japan',
-    'kr': 'South Korea',
-    'lt': 'Lithuania',
-    'lv': 'Latvia',
-    'ma': 'Morocco',
-    'mx': 'Mexico',
-    'my': 'Malaysia',
-    'ng': 'Nigeria',
-    'nl': 'Netherlands',
-    'no': 'Norway',
-    'nz': 'New Zealand',
-    'ph': 'Philippines',
-    'pl': 'Poland',
-    'ps': 'Palestine',
-    'pt': 'Portugal',
-    'ro': 'Romania',
-    'rs': 'Serbia',
-    'ru': 'Russia',
-    'sa': 'Saudi Arabia',
-    'se': 'Sweden',
-    'sg': 'Singapore',
-    'si': 'Slovenia',
-    'sk': 'Slovakia',
-    'th': 'Thailand',
-    'tr': 'Turkey',
-    'tw': 'Taiwan',
-    'ua': 'Ukraine',
-    'us': 'United States',
-    've': 'Venezuela',
-    'za': 'South Africa'
+    'ae': '🇦🇪 UAE', 'ar': '🇦🇷 Argentina', 'at': '🇦🇹 Austria', 
+    'au': '🇦🇺 Australia', 'be': '🇧🇪 Belgium', 'bg': '🇧🇬 Bulgaria',
+    'br': '🇧🇷 Brazil', 'ca': '🇨🇦 Canada', 'ch': '🇨🇭 Switzerland',
+    'cn': '🇨🇳 China', 'co': '🇨🇴 Colombia', 'cu': '🇨🇺 Cuba',
+    'cz': '🇨🇿 Czechia', 'de': '🇩🇪 Germany', 'eg': '🇪🇬 Egypt',
+    'fr': '🇫🇷 France', 'gb': '🇬🇧 UK', 'gr': '🇬🇷 Greece',
+    'hk': '🇭🇰 Hong Kong', 'hu': '🇭🇺 Hungary', 'id': '🇮🇩 Indonesia',
+    'ie': '🇮🇪 Ireland', 'in': '🇮🇳 India', 'it': '🇮🇹 Italy',
+    'jp': '🇯🇵 Japan', 'kr': '🇰🇷 Korea', 'lt': '🇱🇹 Lithuania',
+    'lv': '🇱🇻 Latvia', 'ma': '🇲🇦 Morocco', 'mx': '🇲🇽 Mexico',
+    'my': '🇲🇾 Malaysia', 'ng': '🇳🇬 Nigeria', 'nl': '🇳🇱 Netherlands',
+    'no': '🇳🇴 Norway', 'nz': '🇳🇿 New Zealand', 'ph': '🇵🇭 Philippines',
+    'pl': '🇵🇱 Poland', 'ps': '🇵🇸 Palestine', 'pt': '🇵🇹 Portugal',
+    'ro': '🇷🇴 Romania', 'rs': '🇷🇸 Serbia', 'ru': '🇷🇺 Russia',
+    'sa': '🇸🇦 Saudi Arabia', 'se': '🇸🇪 Sweden', 'sg': '🇸🇬 Singapore',
+    'si': '🇸🇮 Slovenia', 'sk': '🇸🇰 Slovakia', 'th': '🇹🇭 Thailand',
+    'tr': '🇹🇷 Turkey', 'tw': '🇹🇼 Taiwan', 'ua': '🇺🇦 Ukraine',
+    'us': '🇺🇸 USA', 've': '🇻🇪 Venezuela', 'za': '🇿🇦 South Africa'
 }
 
-# --- App Layout ---
-st.title("🌍 Daily World News")
-st.write("Get all news headlines by country for a specific day")
+# Streamlit App
+st.set_page_config(page_title="World News Dashboard", layout="wide")
+st.title("🌍 World News Dashboard")
+st.write("Get all news headlines by country and date")
 
-# --- User Input ---
+# User Inputs
 col1, col2 = st.columns(2)
-
 with col1:
-    country_name = st.selectbox(
-        "Select country",
-        [f"{name} ({code})" for code, name in COUNTRIES.items()]
+    selected_country = st.selectbox(
+        "Select Country",
+        options=list(COUNTRIES.values()),
+        index=list(COUNTRIES.values()).index('🇺🇸 USA')
     )
-    country_code = country_name.split('(')[-1].strip(')')
+    country_code = [k for k, v in COUNTRIES.items() if v == selected_country][0]
 
 with col2:
-    news_date = st.date_input(
-        "Select date",
+    selected_date = st.date_input(
+        "Select Date",
         datetime.now()
     )
 
-# --- Fetch News ---
-if st.button("Get News"):
-    params = {
-        "apiKey": API_KEY,
-        "country": country_code,
-        "pageSize": 100  # Max allowed by free tier
-    }
-
-    with st.spinner(f"Fetching news for {COUNTRIES[country_code]} on {news_date}..."):
+# Fetch and Display News
+if st.button("Get Daily News", type="primary"):
+    with st.spinner(f"Fetching news for {selected_country} on {selected_date}..."):
         try:
-            response = requests.get(BASE_URL, params=params)
+            # Get recent news (NewsAPI's top-headlines doesn't support historical dates)
+            response = requests.get(
+                BASE_URL,
+                params={
+                    "apiKey": API_KEY,
+                    "country": country_code,
+                    "pageSize": 100  # Max results for free tier
+                }
+            )
             response.raise_for_status()
             
-            articles = response.json().get('articles', [])
-            
             # Filter articles by selected date
+            all_articles = response.json().get('articles', [])
             daily_news = [
-                article for article in articles 
-                if article['publishedAt'].startswith(str(news_date))
+                article for article in all_articles 
+                if article['publishedAt'].startswith(str(selected_date))
             ]
-
-            if daily_news:
-                st.subheader(f"🗞️ {len(daily_news)} News for {COUNTRIES[country_code]} on {news_date}")
+            
+            # Display results
+            if not daily_news:
+                st.warning(f"No news found for {selected_country} on {selected_date}")
+                st.info("Note: Free NewsAPI only shows very recent news (last 1-2 days)")
+            else:
+                st.success(f"📰 Found {len(daily_news)} news articles")
                 
                 for article in daily_news:
-                    st.markdown(f"### {article['title']}")
-                    st.write(article.get('description', ''))
-                    st.markdown(f"[Read more]({article['url']})")
-                    st.caption(f"Source: {article['source']['name']} | Published: {article['publishedAt'][11:16]}")
-                    st.write("---")
-            else:
-                st.info("No news found for this date. Try a different date or country.")
-
-        except requests.exceptions.RequestException as e:
-            st.error(f"Failed to fetch news: {e}")
+                    with st.expander(f"**{article['title']}**", expanded=False):
+                        st.write(article.get('description', 'No description available'))
+                        st.caption(f"**Source:** {article['source']['name']} | **Published:** {article['publishedAt'][11:16]} UTC")
+                        st.markdown(f"[Read full article →]({article['url']})")
+                        st.divider()
+                        
+        except Exception as e:
+            st.error(f"Error fetching news: {str(e)}")
