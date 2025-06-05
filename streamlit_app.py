@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # --- Config ---
-API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your key
+API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your ke
 BASE_URL = "https://newsapi.org/v2/top-headlines"
 
 # Updated list of all available countries (including Palestine, excluding Israel)
