@@ -22,8 +22,7 @@ with st.sidebar:
         "Filter by Century",
         min_value=1,
         max_value=21,
-        value=(18, 21)  # This line was missing closing parenthesis
-    )
+        value=(18, 21)
     
     st.markdown("""
     **Data Sources**:
@@ -101,17 +100,20 @@ if st.button("🔍 Find Historical Events"):
             ax1.set_ylabel("Count")
             st.pyplot(fig1)
             
-            # Year Distribution
+            # Year Distribution - FIXED VERSION
             fig2, ax2 = plt.subplots(figsize=(10, 4))
+            # Create a numeric y-value for all points
+            df['y_value'] = 0
             df.plot.scatter(
                 x="year",
-                y=[0]*len(df),
+                y="y_value",
                 s=100,
                 alpha=0.5,
                 ax=ax2
             )
             ax2.set_title("Event Timeline")
             ax2.get_yaxis().set_visible(False)
+            ax2.set_xlabel("Year")
             st.pyplot(fig2)
 
 # --- Footer ---
