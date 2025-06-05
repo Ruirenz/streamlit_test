@@ -4,6 +4,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# --- Page Config ---
 st.set_page_config(layout="wide")
 st.title("📚 Historical Events Explorer")
 st.write("Discover what happened on any date in history")
@@ -17,13 +18,14 @@ with st.sidebar:
         min_value=date(1, 1, 1),
         max_value=date.today()
     )
-    
+
     year_filter = st.slider(
         "Filter by Century",
         min_value=1,
         max_value=21,
         value=(18, 21)
-    
+    )
+
     st.markdown("""
     **Data Sources**:
     - [On This Day API](https://byabbe.se/on-this-day/)
@@ -45,18 +47,18 @@ def fetch_wikipedia_events(month, day):
 def fetch_historical_events(month, day, year=None):
     """Combine multiple data sources"""
     events = fetch_wikipedia_events(month, day)
-    
+
     # Filter by year if provided
     if year:
         events = [e for e in events if str(year) in e.get("year", "")]
-    
+
     return sorted(events, key=lambda x: int(x.get("year", 0)), reverse=True)
 
 # --- Main Display ---
 if st.button("🔍 Find Historical Events"):
     month, day, year = selected_date.month, selected_date.day, selected_date.year
     events = fetch_historical_events(month, day)
-    
+
     if not events:
         st.warning("No events found for this date")
     else:
@@ -66,28 +68,28 @@ if st.button("🔍 Find Historical Events"):
             e for e in events 
             if min_century <= (int(e["year"]) // 100 + 1) <= max_century
         ]
-        
+
         # --- Display Results ---
         col1, col2 = st.columns([3, 2])
-        
+
         with col1:
             st.subheader(f"🗓️ {selected_date.strftime('%B %d')} in History")
-            
+
             for event in filtered_events[:50]:  # Limit to 50 events
                 with st.expander(f"**{event['year']}**: {event['description'][:100]}...", expanded=False):
                     st.write(event["description"])
                     if "wikipedia" in event:
                         st.markdown(f"[Read more on Wikipedia]({event['wikipedia'][0]['wikipedia']})")
-        
+
         with col2:
             # --- Visualization ---
             st.subheader("📊 Timeline Analysis")
-            
+
             # Prepare data for visualization
             df = pd.DataFrame(filtered_events)
             df["year"] = df["year"].astype(int)
             df["century"] = (df["year"] // 100) + 1
-            
+
             # Century Distribution
             fig1, ax1 = plt.subplots()
             df["century"].value_counts().sort_index().plot(
@@ -99,10 +101,9 @@ if st.button("🔍 Find Historical Events"):
             ax1.set_xlabel("Century")
             ax1.set_ylabel("Count")
             st.pyplot(fig1)
-            
-            # Year Distribution - FIXED VERSION
+
+            # Year Distribution - Scatter Plot
             fig2, ax2 = plt.subplots(figsize=(10, 4))
-            # Create a numeric y-value for all points
             df['y_value'] = 0
             df.plot.scatter(
                 x="year",
@@ -119,3 +120,4 @@ if st.button("🔍 Find Historical Events"):
 # --- Footer ---
 st.markdown("---")
 st.caption("ℹ️ Data sources may have limitations for very ancient dates")
+
