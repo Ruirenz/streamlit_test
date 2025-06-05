@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 
 # --- Config ---
-API_KEY = "your_newsapi_key_here"  # Replace with your key
+API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your key
 BASE_URL = "https://newsapi.org/v2/top-headlines"
 
 # --- Title ---
@@ -40,3 +40,4 @@ if st.button("Fetch News"):
             st.info("No articles found.")
     else:
         st.error(f"API Error: {response.status_code}")
+
