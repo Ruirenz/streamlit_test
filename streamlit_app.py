@@ -116,5 +116,3 @@ if st.button("🔍 Find Historical Events"):
 # --- Footer ---
 st.markdown("---")
 st.caption("ℹ️ Data sources may have limitations for very ancient dates")
-        ax.set_title("Events by Century")
-        st.pyplot(fig)
