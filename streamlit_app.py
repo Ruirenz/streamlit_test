@@ -1,61 +1,42 @@
 import streamlit as st
 import requests
-from datetime import date
-import matplotlib.pyplot as plt
+import pandas as pd
 
-st.title("📚 Historical Events Explorer")
-st.write("Select any date and explore what happened in history on that day!")
+# --- Config ---
+API_KEY = "your_newsapi_key_here"  # Replace with your key
+BASE_URL = "https://newsapi.org/v2/top-headlines"
 
-# --- Date Input ---
-selected_date = st.date_input(
-    "Choose a date",
-    value=date.today(),
-    min_value=date(1900, 1, 1),
-    max_value=date(2100, 12, 31)
-)
-month = selected_date.month
-day = selected_date.day
+# --- Title ---
+st.title("🌍 World News Dashboard")
+st.write("Stay up to date with the latest headlines by country or keyword.")
 
-# --- API Call ---
-if st.button("Show Historical Events"):
-    with st.spinner("Fetching data..."):
-        url = f"https://byabbe.se/on-this-day/{month}/{day}/events.json"
-        res = requests.get(url)
+# --- User Input ---
+country = st.selectbox("Select a country", ["us", "gb", "my", "in", "au", "de", "fr", "jp", "sg"])
+keyword = st.text_input("Or search by keyword (optional):", "")
 
-        if res.status_code == 200:
-            data = res.json()
-            events = data.get("events", [])
+# --- API Request ---
+params = {
+    "apiKey": API_KEY,
+    "country": country if not keyword else "",
+    "q": keyword if keyword else "",
+    "pageSize": 10,
+}
 
-            if events:
-                st.subheader(f"🗓️ Notable Events on {selected_date.strftime('%B %d')}")
-                for event in events[:10]:  # show only top 10
-                    year = event.get("year")
-                    desc = event.get("description")
-                    st.markdown(f"- **{year}**: {desc}")
-            else:
-                st.info("No events found for this date.")
+if st.button("Fetch News"):
+    response = requests.get(BASE_URL, params=params)
 
+    if response.status_code == 200:
+        news_data = response.json()
+        articles = news_data.get("articles", [])
+
+        if articles:
+            st.subheader("📰 Top Headlines")
+            for article in articles:
+                st.markdown(f"### [{article['title']}]({article['url']})")
+                st.write(article['description'])
+                st.caption(f"Source: {article['source']['name']} | Published: {article['publishedAt']}")
+                st.write("---")
         else:
-            st.error("Failed to fetch events. Try again later.")
-
-# --- Optional: Visualize Events by Century ---
-    if events:
-        st.subheader("📊 Event Count by Century")
-        centuries = []
-        for event in events:
-            try:
-                yr = int(event["year"])
-                century = (yr // 100 + 1) if yr > 0 else (yr // 100)
-                centuries.append(f"{century}th century")
-            except:
-                continue
-
-        # Plot bar chart
-        from collections import Counter
-        century_counts = Counter(centuries)
-        fig, ax = plt.subplots()
-        ax.bar(century_counts.keys(), century_counts.values(), color="skyblue")
-        plt.xticks(rotation=45)
-        ax.set_ylabel("Number of Events")
-        ax.set_title("Events by Century")
-        st.pyplot(fig)
+            st.info("No articles found.")
+    else:
+        st.error(f"API Error: {response.status_code}")
