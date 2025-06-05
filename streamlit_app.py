@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 API_KEY = "e8f7788e76b24e45b9f7e57cbb6130f5"  # Replace with your key
 BASE_URL = "https://newsapi.org/v2/top-headlines"
 
-# List of all available countries supported by NewsAPI
+# Updated list of all available countries (including Palestine, excluding Israel)
 COUNTRIES = {
     'ae': 'United Arab Emirates',
     'ar': 'Argentina',
@@ -31,7 +31,6 @@ COUNTRIES = {
     'hu': 'Hungary',
     'id': 'Indonesia',
     'ie': 'Ireland',
-    'il': 'Israel',
     'in': 'India',
     'it': 'Italy',
     'jp': 'Japan',
@@ -47,6 +46,7 @@ COUNTRIES = {
     'nz': 'New Zealand',
     'ph': 'Philippines',
     'pl': 'Poland',
+    'ps': 'Palestine',
     'pt': 'Portugal',
     'ro': 'Romania',
     'rs': 'Serbia',
@@ -67,7 +67,7 @@ COUNTRIES = {
 
 # --- Title ---
 st.title("🌍 World News Dashboard")
-st.write("Stay up to date with the latest headlines by country or keyword.")
+st.write("Get news headlines by country for a specific day")
 
 # --- User Input ---
 col1, col2 = st.columns(2)
@@ -80,45 +80,46 @@ with col1:
     country_code = selected_country.split('(')[-1].strip(')')
 
 with col2:
-    # Date selection
-    today = datetime.now()
-    week_ago = today - timedelta(days=7)
-    start_date = st.date_input("From date", week_ago)
-    end_date = st.date_input("To date", today)
+    # Single date selection
+    selected_date = st.date_input("Select date", datetime.now())
 
 keyword = st.text_input("Search by keyword (optional):", "")
 
 # --- API Request ---
 params = {
     "apiKey": API_KEY,
-    "country": country_code if not keyword else "",
+    "country": country_code,
     "q": keyword if keyword else "",
-    "pageSize": 10,
-    "from": start_date,
-    "to": end_date
+    "pageSize": 100,  # Maximum allowed by free tier
+    "from": selected_date,
+    "to": selected_date + timedelta(days=1)  # Include the full selected day
 }
 
 if st.button("Fetch News"):
-    # Validate date range
-    if start_date > end_date:
-        st.error("Error: End date must be after start date.")
-    else:
-        with st.spinner("Fetching news..."):
-            response = requests.get(BASE_URL, params=params)
+    with st.spinner(f"Fetching news for {COUNTRIES[country_code]} on {selected_date}..."):
+        response = requests.get(BASE_URL, params=params)
 
-            if response.status_code == 200:
-                news_data = response.json()
-                articles = news_data.get("articles", [])
+        if response.status_code == 200:
+            news_data = response.json()
+            articles = news_data.get("articles", [])
 
-                if articles:
-                    st.subheader(f"📰 Top Headlines for {COUNTRIES[country_code]} from {start_date} to {end_date}")
-                    for article in articles:
-                        st.markdown(f"### [{article['title']}]({article['url']})")
-                        st.write(article['description'])
-                        published_date = article['publishedAt'][:10]  # Extract YYYY-MM-DD
-                        st.caption(f"Source: {article['source']['name']} | Published: {published_date}")
-                        st.write("---")
-                else:
-                    st.info("No articles found for the selected criteria.")
+            if articles:
+                st.subheader(f"📰 News for {COUNTRIES[country_code]} on {selected_date}")
+                
+                # Convert to DataFrame for better display
+                news_df = pd.DataFrame(articles)
+                news_df['publishedAt'] = pd.to_datetime(news_df['publishedAt']).dt.strftime('%Y-%m-%d %H:%M')
+                
+                # Display in a clean table with clickable links
+                for idx, row in news_df.iterrows():
+                    st.markdown(f"### [{row['title']}]({row['url']})")
+                    st.write(row['description'])
+                    st.caption(f"Source: {row['source']['name']} | Published: {row['publishedAt']}")
+                    st.write("---")
+                
+                st.success(f"Found {len(articles)} articles")
             else:
-                st.error(f"API Error: {response.status_code} - {response.json().get('message', 'Unknown error')}")
+                st.info("No articles found for the selected date and country.")
+        else:
+            error_msg = response.json().get('message', 'Unknown error')
+            st.error(f"API Error: {response.status_code} - {error_msg}")
