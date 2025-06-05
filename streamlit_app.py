@@ -1,67 +1,56 @@
 import streamlit as st
+import requests
 from datetime import date
+import matplotlib.pyplot as plt
 
-# --- Background Color Styling ---
-st.markdown("""
-    <style>
-    .stApp {
-          background-color: #f3e5f5; 
-    }
-    </style>
-""", unsafe_allow_html=True)
+st.title("📚 Historical Events Explorer")
+st.write("Select any date and explore what happened in history on that day!")
 
-# --- Sidebar Menu ---
-menu = st.sidebar.selectbox("Select a Calculator", [
-    "BMI Calculator",
-    "Age Calculator",
-    "Temperature Converter"
-])
+# --- Date Input ---
+selected_date = st.date_input("Choose a date", date.today())
+month = selected_date.month
+day = selected_date.day
 
-# --- BMI Calculator ---
-if menu == "BMI Calculator":
-    st.title("🏋️ BMI Calculator")
-    weight = st.number_input("Enter your weight (kg):", min_value=0.0, value=60.0)
-    height = st.number_input("Enter your height (cm):", min_value=0.0, value=170.0)
+# --- API Call ---
+if st.button("Show Historical Events"):
+    with st.spinner("Fetching data..."):
+        url = f"https://byabbe.se/on-this-day/{month}/{day}/events.json"
+        res = requests.get(url)
 
-    if st.button("Calculate BMI"):
-        if weight > 0 and height > 0:
-            height_m = height / 100
-            bmi = weight / (height_m ** 2)
-            st.success(f"Your BMI is: {bmi:.2f}")
-            if bmi < 18.5:
-                st.info("Category: Underweight")
-            elif bmi < 24.9:
-                st.info("Category: Normal weight")
-            elif bmi < 29.9:
-                st.info("Category: Overweight")
+        if res.status_code == 200:
+            data = res.json()
+            events = data.get("events", [])
+
+            if events:
+                st.subheader(f"🗓️ Notable Events on {selected_date.strftime('%B %d')}")
+                for event in events[:10]:  # show only top 10
+                    year = event.get("year")
+                    desc = event.get("description")
+                    st.markdown(f"- **{year}**: {desc}")
             else:
-                st.info("Category: Obese")
+                st.info("No events found for this date.")
+
         else:
-            st.warning("Please enter valid height and weight.")
+            st.error("Failed to fetch events. Try again later.")
 
-# --- Age Calculator ---
-elif menu == "Age Calculator":
-    st.title("🎂 Age Calculator")
-    dob = st.date_input("Enter your date of birth:", date(2000, 1, 1))
+# --- Optional: Visualize Events by Century ---
+    if events:
+        st.subheader("📊 Event Count by Century")
+        centuries = []
+        for event in events:
+            try:
+                yr = int(event["year"])
+                century = (yr // 100 + 1) if yr > 0 else (yr // 100)
+                centuries.append(f"{century}th century")
+            except:
+                continue
 
-    if st.button("Calculate Age"):
-        today = date.today()
-        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        st.success(f"You are {age} years old.")
-
-# --- Temperature Converter ---
-elif menu == "Temperature Converter":
-    st.title("🌡️ Temperature Converter")
-    conversion = st.selectbox("Select conversion direction:", [
-        "Celsius to Fahrenheit",
-        "Fahrenheit to Celsius"
-    ])
-    temp = st.number_input("Enter temperature value:")
-
-    if st.button("Convert"):
-        if conversion == "Celsius to Fahrenheit":
-            result = (temp * 9/5) + 32
-            st.success(f"{temp}°C = {result:.2f}°F")
-        else:
-            result = (temp - 32) * 5/9
-            st.success(f"{temp}°F = {result:.2f}°C")
+        # Plot bar chart
+        from collections import Counter
+        century_counts = Counter(centuries)
+        fig, ax = plt.subplots()
+        ax.bar(century_counts.keys(), century_counts.values(), color="skyblue")
+        plt.xticks(rotation=45)
+        ax.set_ylabel("Number of Events")
+        ax.set_title("Events by Century")
+        st.pyplot(fig)
