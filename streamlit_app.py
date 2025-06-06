@@ -52,7 +52,15 @@ def fetch_historical_events(month, day, year=None):
     if year:
         events = [e for e in events if str(year) in e.get("year", "")]
 
-    return sorted(events, key=lambda x: int(x.get("year", 0)), reverse=True)
+    valid_events = []
+for e in events:
+    try:
+        e["year"] = int(e["year"])
+        valid_events.append(e)
+    except (ValueError, TypeError):
+        continue
+
+return sorted(valid_events, key=lambda x: x["year"], reverse=True)
 
 # --- Main Display ---
 if st.button("🔍 Find Historical Events"):
