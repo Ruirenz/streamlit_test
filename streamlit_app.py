@@ -4,7 +4,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# --- Page Config --
+# --- Page Config ---
 st.set_page_config(layout="wide")
 st.title("📚 Historical Events Explorer")
 st.write("Discover what happened on any date in history")
@@ -52,15 +52,16 @@ def fetch_historical_events(month, day, year=None):
     if year:
         events = [e for e in events if str(year) in e.get("year", "")]
 
+    # Safely convert year to int and filter invalid entries
     valid_events = []
-for e in events:
-    try:
-        e["year"] = int(e["year"])
-        valid_events.append(e)
-    except (ValueError, TypeError):
-        continue
+    for e in events:
+        try:
+            e["year"] = int(e["year"])
+            valid_events.append(e)
+        except (ValueError, TypeError):
+            continue
 
-return sorted(valid_events, key=lambda x: x["year"], reverse=True)
+    return sorted(valid_events, key=lambda x: x["year"], reverse=True)
 
 # --- Main Display ---
 if st.button("🔍 Find Historical Events"):
@@ -74,7 +75,7 @@ if st.button("🔍 Find Historical Events"):
         min_century, max_century = year_filter
         filtered_events = [
             e for e in events 
-            if min_century <= (int(e["year"]) // 100 + 1) <= max_century
+            if min_century <= (e["year"] // 100 + 1) <= max_century
         ]
 
         # --- Display Results ---
@@ -86,7 +87,7 @@ if st.button("🔍 Find Historical Events"):
             for event in filtered_events[:50]:  # Limit to 50 events
                 with st.expander(f"**{event['year']}**: {event['description'][:100]}...", expanded=False):
                     st.write(event["description"])
-                    if "wikipedia" in event:
+                    if "wikipedia" in event and event["wikipedia"]:
                         st.markdown(f"[Read more on Wikipedia]({event['wikipedia'][0]['wikipedia']})")
 
         with col2:
@@ -95,7 +96,6 @@ if st.button("🔍 Find Historical Events"):
 
             # Prepare data for visualization
             df = pd.DataFrame(filtered_events)
-            df["year"] = df["year"].astype(int)
             df["century"] = (df["year"] // 100) + 1
 
             # Century Distribution
