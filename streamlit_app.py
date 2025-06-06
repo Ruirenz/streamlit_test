@@ -4,7 +4,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# --- Page Config ---
+# --- Page Config --
 st.set_page_config(layout="wide")
 st.title("📚 Historical Events Explorer")
 st.write("Discover what happened on any date in history")
