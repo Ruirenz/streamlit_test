@@ -12,7 +12,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-image: url("https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fillustrations%2Fhistory-lesson&psig=AOvVaw22FSOKIXa28p7lbaSozgEC&ust=1750258210473000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCOia0Y3a-I0DFQAAAAAdAAAAABAE");
+        background-image: url("https://media.istockphoto.com/id/1092170964/vector/history-doodles-with-lettering.jpg?s=612x612&w=0&k=20&c=J-X75GlaxTBRIAMKQaSahDsf2WgzlhnffbUlYb8N594=");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
