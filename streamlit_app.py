@@ -4,6 +4,28 @@ from datetime import date
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# --- Custom Background from Web ---
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("https://images.unsplash.com/photo-1603575448362-cf57b1f696cc?auto=format&fit=crop&w=1950&q=80");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        color: white;
+    }}
+    .block-container {{
+        background-color: rgba(0, 0, 0, 0.6);  /* Dark overlay */
+        padding: 2rem;
+        border-radius: 10px;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- Page Config ---
 st.set_page_config(layout="wide")
 st.title("📚 Historical Events Explorer")
@@ -26,11 +48,9 @@ with st.sidebar:
         value=(18, 21)
     )
 
-    st.markdown("""
-    **Data Sources**:
+    st.markdown("""**Data Sources**:
     - [On This Day API](https://byabbe.se/on-this-day/)
-    - [Wikipedia Events](https://en.wikipedia.org)
-    """)
+    - [Wikipedia Events](https://en.wikipedia.org)""")
 
 # --- API Functions ---
 def fetch_wikipedia_events(month, day):
@@ -98,34 +118,4 @@ if st.button("🔍 Find Historical Events"):
             df = pd.DataFrame(filtered_events)
             df["century"] = (df["year"] // 100) + 1
 
-            # Century Distribution
-            fig1, ax1 = plt.subplots()
-            df["century"].value_counts().sort_index().plot(
-                kind="bar", 
-                color="teal",
-                ax=ax1
-            )
-            ax1.set_title("Events by Century")
-            ax1.set_xlabel("Century")
-            ax1.set_ylabel("Count")
-            st.pyplot(fig1)
-
-            # Year Distribution - Scatter Plot
-            fig2, ax2 = plt.subplots(figsize=(10, 4))
-            df['y_value'] = 0
-            df.plot.scatter(
-                x="year",
-                y="y_value",
-                s=100,
-                alpha=0.5,
-                ax=ax2
-            )
-            ax2.set_title("Event Timeline")
-            ax2.get_yaxis().set_visible(False)
-            ax2.set_xlabel("Year")
-            st.pyplot(fig2)
-
-# --- Footer ---
-st.markdown("---")
-st.caption("ℹ️ Data sources may have limitations for very ancient dates")
 
