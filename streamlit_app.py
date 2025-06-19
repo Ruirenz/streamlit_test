@@ -40,7 +40,7 @@ with st.sidebar:
         "Select Date",
         value=date(1969, 7, 20),
         min_value=date(1, 1, 1),
-        max_value=date(15),
+        max_value=date.today()
     )
 
     year_filter = st.slider(
