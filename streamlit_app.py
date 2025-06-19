@@ -46,8 +46,8 @@ with st.sidebar:
     year_filter = st.slider(
         "Filter by Century",
         min_value=1,
-        max_value=21,
-        value=(18, 21)
+        max_value=15,
+        value=(1, 15)
     )
 
     st.markdown("""**Data Sources**:
